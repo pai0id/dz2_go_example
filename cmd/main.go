@@ -2,6 +2,9 @@ package main
 
 import (
     "fmt"
+    "dz4_go_example/internal/parser"
+    "os"
+    "io/ioutil"
 )
 
 func main() {
@@ -20,12 +23,12 @@ func main() {
 
     emailText := string(content)
 
-    rmt.Println("CountParts")
-    partsCount := CountParts(emailText)
+    fmt.Println("CountParts")
+    partsCount := parser.CountParts(emailText)
     fmt.Println("Количество партов:", partsCount)
 
-    rmt.Println("ParseEmail")
-    partsCount, partContents := ParseEmail(emailText)
+    fmt.Println("ParseEmail")
+    partsCount, partContents := parser.ParseEmail(emailText)
     fmt.Println("Количество партов:", partsCount)
     fmt.Println("Содержимое:")
     for i, content := range partContents {

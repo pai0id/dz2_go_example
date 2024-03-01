@@ -37,7 +37,7 @@ SMTP (Simple Mail Transfer Protocol) - это протокол, использу
 
 Запустить программу можно так:
     ```bash
-    $ make run <filepath>
+    $ make run FILE=<filepath>
     ```
 
  - filepath - Файл с письмом
