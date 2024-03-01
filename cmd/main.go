@@ -1,37 +1,54 @@
 package main
 
 import (
-    "fmt"
-    "dz4_go_example/internal/parser"
-    "os"
-    "io/ioutil"
+	"dz4_go_example/internal/parser"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"flag"
 )
 
 func main() {
-    if len(os.Args) < 2 {
-        fmt.Println("Корректный вызов программы: go run <filename>")
-        os.Exit(1)
-    }
+	fileName, err := parseFlags()
+	if err != nil {
+		log.Fatal("parse flags: ", err)
+	}
 
-    filename := os.Args[1]
+	if err := run(fileName); err != nil {
+		log.Fatal("run: ", err)
+	}
+}
 
-    content, err := ioutil.ReadFile(filename)
-    if err != nil {
-        fmt.Printf("Ошибка чтения файла: %v\n", err)
-        os.Exit(1)
-    }
+func run(fileName string) error {
+	content, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return err
+	}
 
-    emailText := string(content)
+	emailText := string(content)
 
-    fmt.Println("CountParts")
-    partsCount := parser.CountParts(emailText)
-    fmt.Println("Количество партов:", partsCount)
+	fmt.Println("CountParts")
+	partsCount := parser.CountParts(emailText)
+	fmt.Println("Количество партов:", partsCount)
 
-    fmt.Println("ParseEmail")
-    partsCount, partContents := parser.ParseEmail(emailText)
-    fmt.Println("Количество партов:", partsCount)
-    fmt.Println("Содержимое:")
-    for i, content := range partContents {
-        fmt.Printf("Парт %d: %s\n", i+1, content)
-    }
+	fmt.Println("ParseEmail")
+	partsCount, partContents := parser.ParseEmail(emailText)
+	fmt.Println("Количество партов:", partsCount)
+	fmt.Println("Содержимое:")
+	for i, content := range partContents {
+		fmt.Printf("Парт %d: %s\n", i+1, content)
+	}
+	return nil
+}
+
+func parseFlags() (fileName string, err error) {
+	flag.StringVar(&fileName, "FILE", "", "filenmae (required)")
+
+	flag.Parse()
+
+	if fileName == "" {
+		return "", fmt.Errorf("missing required argument FILE")
+	}
+
+	return
 }
