@@ -4,11 +4,11 @@ import (
     "fmt"
 )
 
-func CountParts(emailText string) int {
+func countParts(emailText string) int {
 
 }
 
-func ParseEmail(emailText string) (int, []string) {
+func parseEmail(emailText string) (int, []string) {
 
 }
 
