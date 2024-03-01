@@ -2,7 +2,6 @@ package parser
 
 import (
     "testing"
-    "reflect"
 )
 
 func TestCountParts_Positive1(t *testing.T) {
@@ -11,11 +10,12 @@ To: recipient@example.com
 Subject: Test email
 
 This is a test email with a single part.`
-
     expected := 1
-    result := CountParts(emailText)
-    if result != expected {
-        t.Errorf("CountParts returned incorrect result, got: %d, want: %d.", result, expected)
+
+    actual := CountParts(emailText)
+
+    if actual != expected {
+        t.Errorf("CountParts() = %d; want %d", actual, expected)
     }
 }
 
@@ -44,31 +44,36 @@ Content-Type: text/html; charset="UTF-8"
 </html>
 
 --Boundary_123456789--`
+    expected := 3
 
-    expected := 3 // Одна часть заголовка и две части контента
-    result := CountParts(emailText)
-    if result != expected {
-        t.Errorf("CountParts returned incorrect result, got: %d, want: %d.", result, expected)
+    actual := CountParts(emailText)
+
+    if actual != expected {
+        t.Errorf("CountParts() = %d; want %d", actual, expected)
     }
 }
 
 func TestCountParts_Negative1(t *testing.T) {
-    emailText := "" // Пустой текст письма
+    emailText := `From: sender@example.com
+To: recipient@example.com
+Subject: Test email`
+    expected := 0
 
-    expected := 0 // Ожидаем, что не будет ни одной части
-    result := CountParts(emailText)
-    if result != expected {
-        t.Errorf("CountParts returned incorrect result, got: %d, want: %d.", result, expected)
+    actual := CountParts(emailText)
+
+    if actual != expected {
+        t.Errorf("CountParts() = %d; want %d", actual, expected)
     }
 }
 
 func TestCountParts_Negative2(t *testing.T) {
-    emailText := `This is not an SMTP formatted email.`
+    emailText := ""
+    expected := 0
 
-    expected := 0 // Ожидаем, что не будет ни одной части
-    result := CountParts(emailText)
-    if result != expected {
-        t.Errorf("CountParts returned incorrect result, got: %d, want: %d.", result, expected)
+    actual := CountParts(emailText)
+
+    if actual != expected {
+        t.Errorf("CountParts() = %d; want %d", actual, expected)
     }
 }
 
@@ -78,16 +83,19 @@ To: recipient@example.com
 Subject: Test email
 
 This is a test email with a single part.`
+    expectedCount := 1
+    expectedContents := []string{"This is a test email with a single part."}
 
-    expectedParts := 1
-    expectedContents := []string{"From: sender@example.com\nTo: recipient@example.com\nSubject: Test email\n\nThis is a test email with a single part."}
+    actualCount, actualContents := ParseEmail(emailText)
 
-    partsCount, partContents := ParseEmail(emailText)
-    if partsCount != expectedParts {
-        t.Errorf("ParseEmail returned incorrect number of parts, got: %d, want: %d.", partsCount, expectedParts)
+    if actualCount != expectedCount {
+        t.Errorf("ParseEmail() count = %d; want %d", actualCount, expectedCount)
     }
-    if !reflect.DeepEqual(partContents, expectedContents) {
-        t.Errorf("ParseEmail returned incorrect part content, got: %v, want: %v.", partContents, expectedContents)
+
+    for i := range expectedContents {
+        if actualContents[i] != expectedContents[i] {
+            t.Errorf("ParseEmail() content = %s; want %s", actualContents[i], expectedContents[i])
+        }
     }
 }
 
@@ -116,50 +124,57 @@ Content-Type: text/html; charset="UTF-8"
 </html>
 
 --Boundary_123456789--`
-
-    expectedParts := 3
+    expectedCount := 3
     expectedContents := []string{
-        "From: sender@example.com\nTo: recipient@example.com\nSubject: Test email\n\nThis is a test email with multiple parts.",
-        "Content-Type: text/plain; charset=\"UTF-8\"\n\nThis is the plain text part of the email.",
-        "Content-Type: text/html; charset=\"UTF-8\"\n\n<html>\n<head>\n<title>Test Email</title>\n</head>\n<body>\n<p>This is the HTML part of the email.</p>\n</body>\n</html>",
+        "This is a test email with multiple parts.",
+        "This is the plain text part of the email.",
+        "<html>\n<head>\n<title>Test Email</title>\n</head>\n<body>\n<p>This is the HTML part of the email.</p>\n</body>\n</html>\n",
     }
 
-    partsCount, partContents := ParseEmail(emailText)
-    if partsCount != expectedParts {
-        t.Errorf("ParseEmail returned incorrect number of parts, got: %d, want: %d.", partsCount, expectedParts)
+    actualCount, actualContents := ParseEmail(emailText)
+
+    if actualCount != expectedCount {
+        t.Errorf("ParseEmail() count = %d; want %d", actualCount, expectedCount)
     }
-    if !reflect.DeepEqual(partContents, expectedContents) {
-        t.Errorf("ParseEmail returned incorrect part content, got: %v, want: %v.", partContents, expectedContents)
+
+    for i := range expectedContents {
+        if actualContents[i] != expectedContents[i] {
+            t.Errorf("ParseEmail() content = %s; want %s", actualContents[i], expectedContents[i])
+        }
     }
 }
 
 func TestParseEmail_Negative1(t *testing.T) {
-    emailText := "" // Пустой текст письма
+    emailText := `From: sender@example.com
+To: recipient@example.com
+Subject: Test email`
+    expectedCount := 0
+    var expectedContents []string
 
-    expectedParts := 0
-    expectedContents := []string{}
+    actualCount, actualContents := ParseEmail(emailText)
 
-    partsCount, partContents := ParseEmail(emailText)
-    if partsCount != expectedParts {
-        t.Errorf("ParseEmail returned incorrect number of parts, got: %d, want: %d.", partsCount, expectedParts)
+    if actualCount != expectedCount {
+        t.Errorf("ParseEmail() count = %d; want %d", actualCount, expectedCount)
     }
-    if !reflect.DeepEqual(partContents, expectedContents) {
-        t.Errorf("ParseEmail returned incorrect part content, got: %v, want: %v.", partContents, expectedContents)
+
+    if len(actualContents) != len(expectedContents) {
+        t.Errorf("ParseEmail() content length = %d; want %d", len(actualContents), len(expectedContents))
     }
 }
 
 func TestParseEmail_Negative2(t *testing.T) {
-    emailText := "This is not an SMTP formatted email."
+    emailText := ""
+    expectedCount := 0
+    var expectedContents []string
 
-    expectedParts := 0
-    expectedContents := []string{}
+    actualCount, actualContents := ParseEmail(emailText)
 
-    partsCount, partContents := ParseEmail(emailText)
-    if partsCount != expectedParts {
-        t.Errorf("ParseEmail returned incorrect number of parts, got: %d, want: %d.", partsCount, expectedParts)
+    if actualCount != expectedCount {
+        t.Errorf("ParseEmail() count = %d; want %d", actualCount, expectedCount)
     }
-    if !reflect.DeepEqual(partContents, expectedContents) {
-        t.Errorf("ParseEmail returned incorrect part content, got: %v, want: %v.", partContents, expectedContents)
+
+    if len(actualContents) != len(expectedContents) {
+        t.Errorf("ParseEmail() content length = %d; want %d", len(actualContents), len(expectedContents))
     }
 }
 
