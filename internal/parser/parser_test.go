@@ -3,11 +3,18 @@ package parser
 import (
 	"fmt"
 	"io/ioutil"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 )
 
-func getEmailText(filename string) (string, error) {
+type TestCase_t struct {
+	filename string
+	want     int
+}
+
+func getFileText(filename string) (string, error) {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return "", err
@@ -15,8 +22,42 @@ func getEmailText(filename string) (string, error) {
 	return string(content), nil
 }
 
+func getTestCases() ([]TestCase_t, error) {
+	testCases := []TestCase_t{}
+	var testCase TestCase_t
+
+	files, err := ioutil.ReadDir("../../data")
+	if err != nil {
+		return nil, err
+	}
+
+	pattern := regexp.MustCompile(`^.*_[0-9]+_out\.txt$`)
+
+	for _, file := range files {
+		if !file.IsDir() && pattern.MatchString(file.Name()) {
+			fileName := fmt.Sprintf("../../data/%s", file.Name())
+
+			content, err := getFileText(fileName)
+			if err != nil {
+				return nil, err
+			}
+
+			num, err := strconv.Atoi(string(content))
+			if err != nil {
+				return nil, err
+			}
+
+			testCase.filename = strings.ReplaceAll(fileName, "out", "in")
+			testCase.want = num
+			testCases = append(testCases, testCase)
+		}
+	}
+
+	return testCases, nil
+}
+
 func TestCountPartsBasic(t *testing.T) {
-	emailText, err := getEmailText("../../data/pos_1.txt")
+	emailText, err := getFileText("../../data/pos_1_in.txt")
 	if err != nil {
 		t.Error(err)
 	}
@@ -29,22 +70,16 @@ func TestCountPartsBasic(t *testing.T) {
 }
 
 func TestCountPartsTableDriven(t *testing.T) {
-	var tests = []struct {
-		filename string
-		want     int
-	}{
-		{"pos_1.txt", 2},
-		{"pos_2.txt", 1},
-		{"pos_3.txt", 1},
-		{"neg_1.txt", 0},
-		{"neg_2.txt", 0},
+	var tests, err = getTestCases()
+	if err != nil {
+		t.Error(err)
 	}
 
 	for _, tt := range tests {
 
 		testname := fmt.Sprintf("%v", tt.filename)
 		t.Run(testname, func(t *testing.T) {
-			emailText, err := getEmailText(fmt.Sprintf("../../data/%s", tt.filename))
+			emailText, err := getFileText(tt.filename)
 			if err != nil {
 				t.Error(err)
 			}
@@ -67,7 +102,7 @@ func areAllSubstrings(substrings []string, mainString string) bool {
 }
 
 func TestParseEmailBasic(t *testing.T) {
-	emailText, err := getEmailText("../../data/pos_1.txt")
+	emailText, err := getFileText("../../data/pos_1_in.txt")
 	if err != nil {
 		t.Error(err)
 	}
@@ -82,22 +117,16 @@ func TestParseEmailBasic(t *testing.T) {
 }
 
 func TestParseEmailDriven(t *testing.T) {
-	var tests = []struct {
-		filename string
-		want     int
-	}{
-		{"pos_1.txt", 2},
-		{"pos_2.txt", 1},
-		{"pos_3.txt", 1},
-		{"neg_1.txt", 0},
-		{"neg_2.txt", 0},
+	var tests, err = getTestCases()
+	if err != nil {
+		t.Error(err)
 	}
 
 	for _, tt := range tests {
 
 		testname := fmt.Sprintf("%v", tt.filename)
 		t.Run(testname, func(t *testing.T) {
-			emailText, err := getEmailText(fmt.Sprintf("../../data/%s", tt.filename))
+			emailText, err := getFileText(tt.filename)
 			if err != nil {
 				t.Error(err)
 			}
