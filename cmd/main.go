@@ -2,10 +2,10 @@ package main
 
 import (
 	"dz4_go_example/internal/parser"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"flag"
 )
 
 func main() {

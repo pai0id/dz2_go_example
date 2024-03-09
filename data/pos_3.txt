@@ -1,0 +1,25 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: Test email
+Content-Type: multipart/alternative; boundary=boundary42
+
+This is a test email with one real and one fake part.
+
+--boundary41
+Content-Type: text/plain; charset="UTF-8"
+
+This is a fake plain text part of the email.
+
+--boundary42
+Content-Type: text/html; charset="UTF-8"
+
+<html>
+<head>
+<title>Test Email</title>
+</head>
+<body>
+<p>This is the HTML part of the email.</p>
+</body>
+</html>
+
+--boundary42--

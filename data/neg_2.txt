@@ -1,0 +1,25 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: Test email
+Content-Type: multipart/alternative; boundary=boundary42
+
+This is a test email without end boundary.
+
+--boundary42
+Content-Type: text/plain; charset="UTF-8"
+
+This is the plain text part of the email.
+
+--boundary42
+Content-Type: text/html; charset="UTF-8"
+
+<html>
+<head>
+<title>Test Email</title>
+</head>
+<body>
+<p>This is the HTML part of the email.</p>
+</body>
+</html>
+
+--boundary41--
